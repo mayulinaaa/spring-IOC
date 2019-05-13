@@ -1,0 +1,145 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--如果id和name一样，IOC容器能检测到，并消除冲突-->
+    <bean id="person" name="person;alias1" class="com.demo.ioc.Person">
+        <property name="name" value="myl"></property>
+        <property name="age" value="15"></property>
+    </bean>
+    <bean id="hello" name="hello;hello2" class="com.demo.ioc.HelloImpl"></bean>
+    <!--使用默认构造函数-->
+    <bean name="bean1" class="com.demo.ioc.HelloImpl2"></bean>
+
+    <!--使用有参构造函数-->
+    <bean name="bean2" class="com.demo.ioc.HelloImpl2">
+        <!--指定构造器参数-->
+        <constructor-arg index="0" value="Hello SpringIOC"></constructor-arg>
+    </bean>
+
+    <!--使用静态工厂方法，calss指定的是该方法所在的类-->
+    <bean id="bean3" class="com.demo.ioc.HelloApiStaticFactor" factory-method="newInstance">
+        <constructor-arg index="0" value="hello springIOC"></constructor-arg>
+    </bean>
+
+    <!--1.定义实例化工厂Bean，calss指的是定义后面的实例化方法所在的类
+    -->
+    <bean id="beanInstanceFactory" class="com.demo.ioc.HelloApiInstanceFactory"></bean>
+    <!--2.使用实例工厂Bean创建Bean-->
+    <bean id="bean4" factory-bean="beanInstanceFactory" factory-method="newInstanceFactory">
+        <constructor-arg index="0" value="Hello Spring!"></constructor-arg>
+    </bean>
+
+    <!--通过构造器进行依赖注入的三种方式 测试方法是HelloImpl3Test-->
+    <!--通过构造器参数索引方法依赖注入-->
+    <bean id="byIndex" class="com.demo.ioc.HelloImpl3">
+        <constructor-arg index="0" value="byIndex"></constructor-arg>
+        <constructor-arg index="1" value="1"/>
+    </bean>
+    <!--通过构造器参数类型方法依赖注入-->
+    <bean id="byType" class="com.demo.ioc.HelloImpl3">
+        <constructor-arg type="int" value="2"/>
+        <constructor-arg type="java.lang.String" value="byType"/>
+    </bean>
+    <!--通过构造器参数名称方式依赖注入-->
+    <bean id="byName" class="com.demo.ioc.HelloImpl3">
+        <constructor-arg name="index" value="3"/>
+        <constructor-arg name="message" value="byName"/>
+    </bean>
+
+    <!--setter方式进行依赖注入,测试方法是HelloImpl3Test-->
+    <bean id="setter" class="com.demo.ioc.HelloImpl4">
+        <property name="index">
+            <value>1</value>
+        </property>
+        <property name="message" value="setterDependency"></property>
+    </bean>
+    <!--spring还可以注入集合类，测试方法是HelloImpl3Test-->
+    <bean id="listBean" class="com.demo.ioc.HelloImpl4">
+        <property name="values">
+            <list>
+                <value>1</value>
+                <value>2</value>
+                <value>3</value>
+                <value>4</value>
+            </list>
+        </property>
+    </bean>
+    <!--spring还可以注入数组-->
+    <bean id="arrayBean" class="com.demo.ioc.HelloImpl4">
+        <!--<property name="array1">
+            <array merge="default" value-type="java.lang.String">
+                <value>1</value>
+                <value>2</value>
+            </array>
+        </property>-->
+        <property name="array2">
+            <array>
+                <array>
+                    <value>3</value>
+                    <value>4</value>
+                </array>
+                <array>
+                    <value>5</value>
+                    <value>6</value>
+                </array>
+            </array>
+        </property>
+    </bean>
+
+    <!--表示父容器的配置-->
+    <!--此处子容器可能也定义了一个该Bean-->
+    <!--<bean id="helloApiBean" class="com.demo.ioc.HelloImpl4">
+        <property name="index" value="1"/>
+        <property name="message" value="hello parent"/>
+    </bean>-->
+
+    <!--延迟初始化bean，使用depends-on-->
+    <bean id="resourceBean" class="com.demo.ioc.ResourceBean" init-method="init" destroy-method="destroy">
+        <!--Spring容器能自动把字符串转换为java.io.File-->
+        <property name="file" value="D:/test.txt"/>
+    </bean>
+    <!--resourceBean要在DependentBean之前被初始化，在DependentBean销毁后再执行resourceBean的销毁-->
+    <bean id="dependentBean"
+          class="com.demo.ioc.DependentBean"
+          init-method="init" destroy-method="destroy" depends-on="resourceBean">
+        <property name="resourceBean" ref="resourceBean"/>
+     </bean>
+
+    <!--自动装配,执行出错-->
+    <bean id="helloApi" class="com.demo.ioc.HelloImpl"/>
+    <bean id="bean" class="com.demo.ioc.HelloApiDecorator" autowire="byName"></bean>
+
+    <!--依赖检查，方法注入-->
+    <bean id="prototypePrinter"
+          class="com.demo.ioc.Printer" scope="prototype"/>
+    <bean id="singletonPrinter"
+          class="com.demo.ioc.Printer" scope="singleton"/>
+    <bean id="helloApi1" class="com.demo.ioc.HelloImpl5" scope="singleton">
+        <property name="printer" ref="prototypePrinter"/>
+        <lookup-method name="createPrototypePrinter" bean="prototypePrinter"/>
+        <lookup-method name="createSingletonPrinter" bean="singletonPrinter"/>
+    </bean>
+    <bean id="helloApi2" class="com.demo.ioc.HelloImpl5" scope="prototype">
+        <property name="printer" ref="prototypePrinter"/>
+        <lookup-method name="createPrototypePrinter" bean="prototypePrinter"/>
+        <lookup-method name="createSingletonPrinter" bean="singletonPrinter"/>
+    </bean>
+
+    <!--SpELxml风格的配置SpELTest.java,测试代码在-->
+    <bean id="world" class="java.lang.String">
+        <constructor-arg value="#{'World!'}"/>
+    </bean>
+    <bean id="hello1" class="java.lang.String">
+        <constructor-arg value="#{'Hello'}#{'World!'}"/>
+    </bean>
+    <bean id="hello4" class="java.lang.String">
+        <!--world被默认解析为Bean-->
+        <constructor-arg value="#{'Hello'+world}"/>
+        <!--不支持嵌套的-->
+        <!--<constructor-arg value="#{'Hello'#{world}}"/>-->
+    </bean>
+    <bean id="hello3" class="java.lang.String">
+        <constructor-arg value="#{'Hello'+@world}"/>
+    </bean>
+</beans>

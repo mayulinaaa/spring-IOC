@@ -1,0 +1,13 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--自动装配,之前执行出错，可能是因为Bean.xml文件中定义的Bean太多了，它还注入了其他的Bean-->
+    <!--<bean id="helloApi" class="com.demo.ioc.HelloImpl"/>
+    <bean id="bean" class="com.demo.ioc.HelloApiDecorator" autowire="byName"></bean>-->
+    <!--通过设置Bean定义的primary属性为true来把指定自动装配时所有候选者中的首选Bean-->
+    <bean class="com.demo.ioc.HelloImpl"></bean>
+    <!--自动装配候选者中的首选Bean-->
+    <bean class="com.demo.ioc.HelloImpl" primary="true"/>
+    <bean id="bean" class="com.demo.ioc.HelloApiDecorator" autowire="constructor"></bean>
+</beans>
